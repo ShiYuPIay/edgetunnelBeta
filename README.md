@@ -1,4 +1,4 @@
-# **shiplay 多功能 VLESS over WebSocket 部署指南**
+# **edgetunnelBeta 多功能 VLESS over WebSocket 部署指南**
 
 [[中文](README.md) | [English](README_EN.md)]
 
