@@ -12,7 +12,7 @@
 客户端 (Clash / V2Ray / Surge / QuantX)
   │             ↑ 配置订阅
   │             │
-  ├──>  shiplay Worker (Cloudflare边缘)
+  ├──>  edgetunnelBeta Worker (Cloudflare边缘)
   │       ├─ 动态路由与负载均衡 (ProxyIP, 端口)
   │       ├─ WebSocket 接入层 (VLESS over WS + TLS)
   │       ├─ KV 存储 (配置、规则集)
@@ -24,7 +24,7 @@
   └──> 上游代理服务器 (VPS / 托管节点)
 ```
 
-架构图说明：用户配置客户端指向 shiplay Worker，Worker 根据配置从多个代理 IP 中随机选择一个，通过 WebSocket 建立到上游节点的 VLESS 连接，处理传入传出流量。Worker 的所有核心参数（UUID、路径、端口、节点标语、伪装站点等）存储在 Cloudflare KV 中，可通过内置 WebUI 即时修改，无需重新部署。Worker 同时提供生成多种订阅格式的接口，根据客户端类型自动适配。
+架构图说明：用户配置客户端指向 edgetunnelBeta Worker，Worker 根据配置从多个代理 IP 中随机选择一个，通过 WebSocket 建立到上游节点的 VLESS 连接，处理传入传出流量。Worker 的所有核心参数（UUID、路径、端口、节点标语、伪装站点等）存储在 Cloudflare KV 中，可通过内置 WebUI 即时修改，无需重新部署。Worker 同时提供生成多种订阅格式的接口，根据客户端类型自动适配。
 
 ## 功能特点
 
