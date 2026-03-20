@@ -1,0 +1,23 @@
+name = "shiplay"
+
+compatibility_date = "2025-01-01"
+# Uncomment the following line if you encounter compatibility issues.
+# compatibility_flags = ["streams_enable_constructors"]
+
+main = "_worker.js"
+
+[[kv_namespaces]]
+binding = "KV"
+# Replace with your KV namespace ID (create in Cloudflare dashboard)
+id = "00000000000000000000000000000000"
+
+[vars]
+# Set an admin password here.  It will be hashed with SHA‑256 and the
+# request’s User‑Agent header before comparison.  Choose a strong
+# passphrase!
+ADMIN = "ChangeMe12345"
+
+[triggers]
+# Schedule Cron triggers for rule updates and optional health checks.
+# This example runs every 30 minutes (*/30).  You can adjust as needed.
+crons = ["*/30 * * * *"]
