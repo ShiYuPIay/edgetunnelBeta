@@ -110,7 +110,12 @@ function renderMissingAdminPage() {
 
 
 function renderAdminPage(config) {
-  const escape = (str) => (str || '').replace(/"/g, '&quot;');
+  const escape = (str) => (str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
   return `<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><title>shiplay 控制面板</title>
   <style>body{font-family:Arial,Helvetica,sans-serif;background:#fafafa;padding:1rem;color:#333;}
@@ -589,15 +594,28 @@ async function handleVLESS(request, config) {
         
         if (firstChunk.length < 22) continue;
         const dv = new DataView(firstChunk.buffer);
+        const ensureLength = (need) => {
+          if (firstChunk.length < need) {
+            return false;
+          }
+          return true;
+        };
         
         const ver = dv.getUint8(0);
-        const id = [...new Uint8Array(firstChunk.buffer.slice(1, 17))].map((b) => b.toString(16).padStart(2,'0')).join('-');
+        if (ver !== 0x00 && ver !== 0x01) {
+          server.close(1008, 'Invalid version');
+          break;
+        }
+        const uuidBytes = new Uint8Array(firstChunk.buffer.slice(1, 17));
+        const hex = Array.from(uuidBytes, (b) => b.toString(16).padStart(2, '0')).join('');
+        const id = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
         
         if (id.toLowerCase() !== config.uuid.toLowerCase()) {
           server.close(1008, 'Invalid UUID');
           break;
         }
         const optLen = dv.getUint8(17);
+        if (!ensureLength(19 + optLen)) continue;
         const cmd = dv.getUint8(18 + optLen);
         if (cmd !== 0x01) {
           server.close(1008, 'Unsupported command');
@@ -605,21 +623,26 @@ async function handleVLESS(request, config) {
         }
         
         let offset = 19 + optLen;
+        if (!ensureLength(offset + 1)) continue;
         const addrType = dv.getUint8(offset);
         offset += 1;
         let addr = '';
         if (addrType === 0x01) {
           
+          if (!ensureLength(offset + 4 + 2)) continue;
           addr = Array.from(new Uint8Array(firstChunk.buffer.slice(offset, offset + 4))).join('.');
           offset += 4;
         } else if (addrType === 0x03) {
           
+          if (!ensureLength(offset + 1)) continue;
           const len = dv.getUint8(offset);
           offset += 1;
+          if (!ensureLength(offset + len + 2)) continue;
           addr = new TextDecoder().decode(firstChunk.buffer.slice(offset, offset + len));
           offset += len;
         } else if (addrType === 0x04) {
           
+          if (!ensureLength(offset + 16 + 2)) continue;
           const arr = [];
           for (let i = 0; i < 8; i++) {
             arr.push(dv.getUint16(offset + i*2).toString(16));
